@@ -1,0 +1,65 @@
+﻿<Window x:Class="FishFarm.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FishFarm"
+        mc:Ignorable="d"
+        Title="Fish Database App" Height="600" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="10">
+            <TextBlock Text="Выберите таблицу для отображения:" FontSize="16" Margin="0,0,0,10"/>
+            <ComboBox Name="comboTables" Width="200" Height="30" SelectionChanged="comboTables_SelectionChanged">
+                <ComboBoxItem Content="Мальки"/>
+                <ComboBoxItem Content="Помещения"/>
+                <ComboBoxItem Content="Бассейны"/>
+                <ComboBoxItem Content="Сотрудники"/>
+                <ComboBoxItem Content="Инкубаторы"/>
+                <ComboBoxItem Content="Аквариумы"/>
+                <ComboBoxItem Content="Расписание"/>
+                <ComboBoxItem Content="Цехи"/>
+                <ComboBoxItem Content="Склады"/>
+                <ComboBoxItem Content="Магазины"/>
+                <ComboBoxItem Content="Заказы"/>
+            </ComboBox>
+
+            <!-- Панель для добавления новых записей -->
+            <GroupBox Header="Добавить новую запись" Margin="0,20,0,0">
+                <StackPanel Name="addPanel" Orientation="Vertical" Margin="10">
+                    <Button Name="btnДобавить" Content="Добавить" Width="200" Height="30" Margin="0,10,0,0" Click="btnДобавить_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Удалить запись" Margin="0,20,0,0">
+                <StackPanel Orientation="Vertical" Margin="10">
+                    <TextBox Name="txtID" Width="200" Margin="0,0,0,10">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="Text" Value="ID записи для удаления"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsFocused" Value="True">
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Setter Property="Text" Value=""/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <Button Name="btnУдалить" Content="Удалить" Width="200" Height="30" Margin="0,10,0,0" Click="btnУдалить_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Кнопка для обновления данных в БД -->
+            <Button Name="btnОбновить" Content="Обновить" Width="200" Height="30" Margin="0,20,0,0" Click="btnОбновить_Click"/>
+        </StackPanel>
+
+        <!-- DataGrid для отображения данных -->
+        <DataGrid Name="dataGrid" AutoGenerateColumns="True" Margin="10" Grid.Column="1" CellEditEnding="dataGrid_CellEditEnding"/>
+    </Grid>
+</Window>
