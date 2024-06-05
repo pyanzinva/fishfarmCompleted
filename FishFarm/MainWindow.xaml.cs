@@ -101,10 +101,12 @@ namespace FishFarm
                 Name = name,
                 Width = 200,
                 Margin = new Thickness(0, 0, 0, 10),
-                Text = placeholder,
+                // Убираем установку текста по умолчанию
+                // Text = placeholder,
                 Foreground = Brushes.Gray
             };
         }
+
 
         private void LoadData()
         {
@@ -154,9 +156,13 @@ namespace FishFarm
 
                 foreach (var field in fieldValues)
                 {
-                    columns.Add(field.Key);
-                    values.Add($"@{field.Key}");
-                    parameters.Add(new SqlParameter($"@{field.Key}", field.Value));
+                    // Исключаем столбец ID_сотрудник из списка столбцов и значений для вставки
+                    if (field.Key != "ID_сотрудник")
+                    {
+                        columns.Add(field.Key);
+                        values.Add($"@{field.Key}");
+                        parameters.Add(new SqlParameter($"@{field.Key}", field.Value));
+                    }
                 }
 
                 string query = $"INSERT INTO {tableName} ({string.Join(", ", columns)}) VALUES ({string.Join(", ", values)})";
@@ -169,10 +175,57 @@ namespace FishFarm
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+
+                MessageBox.Show("Запись успешно добавлена.");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при добавлении записи: {ex.Message}");
+            }
+        }
+
+        // Добавление события нажатия на кнопку "Добавить мероприятие"
+        private void btnДобавитьРасписание_Click(object sender, RoutedEventArgs e)
+        {
+            SheduleWindow sheduleWindow = new SheduleWindow(); // Создание экземпляра формы SheduleWindow
+            sheduleWindow.Show(); // Отображение формы SheduleWindow
+        }
+
+        // Добавление события нажатия на кнопку "Добавить сотрудника"
+        private void btnДобавитьСотрудника_Click(object sender, RoutedEventArgs e)
+        {
+            EmployeeWindow employeeWindow = new EmployeeWindow(); // Создание экземпляра формы EmployeeWindow
+            employeeWindow.Show(); // Отображение формы EmployeeWindow
+        }
+
+
+
+
+        private void TxtID_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtID.Text == "ID записи для удаления")
+            {
+                txtID.Text = "";
+                txtID.Foreground = new SolidColorBrush(Colors.Black);
+            }
+        }
+
+        private void btnДобавить_Click(object sender, RoutedEventArgs e)
+        {
+            // Добавление записи в базу данных
+            // ...
+
+            // Устанавливаем результат диалога на true и закрываем окно
+            DialogResult = true;
+        }
+
+
+        private void TxtID_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtID.Text))
+            {
+                txtID.Text = "ID записи для удаления";
+                txtID.Foreground = new SolidColorBrush(Colors.Gray);
             }
         }
 
@@ -187,8 +240,11 @@ namespace FishFarm
                     return;
                 }
 
-                // Отладочный вывод значения txtID.Text
-                MessageBox.Show($"Введенный ID: {txtID.Text}");
+                if (txtID.Text == "ID записи для удаления" || string.IsNullOrWhiteSpace(txtID.Text))
+                {
+                    MessageBox.Show("Пожалуйста, введите корректный ID.");
+                    return;
+                }
 
                 if (!int.TryParse(txtID.Text, out int id))
                 {
@@ -196,22 +252,37 @@ namespace FishFarm
                     return;
                 }
 
-                string query = $"DELETE FROM {selectedTable} WHERE ID_расписание = @ID";
-
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.Add(new SqlParameter("@ID", id));
-
                     connection.Open();
-                    int rowsAffected = command.ExecuteNonQuery();
-                    if (rowsAffected > 0)
+
+                    // Удаление записи в зависимости от выбранной таблицы
+                    string query = string.Empty;
+                    switch (selectedTable)
                     {
-                        MessageBox.Show("Запись успешно удалена.");
+                        case "Сотрудники":
+                            query = "DELETE FROM Сотрудники WHERE ID_сотрудник = @ID";
+                            break;
+                        case "Расписание":
+                            query = "DELETE FROM Расписание WHERE ID_расписание = @ID";
+                            break;
+                        default:
+                            MessageBox.Show("Невозможно удалить запись из выбранной таблицы.");
+                            return;
                     }
-                    else
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        MessageBox.Show("Запись с указанным ID не найдена.");
+                        command.Parameters.Add(new SqlParameter("@ID", id));
+                        int rowsAffected = command.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                        {
+                            MessageBox.Show("Запись успешно удалена.");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Запись с указанным ID не найдена.");
+                        }
                     }
                 }
 
@@ -222,6 +293,11 @@ namespace FishFarm
                 MessageBox.Show($"Ошибка при удалении записи: {ex.Message}");
             }
         }
+
+
+
+
+
 
 
         private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -280,47 +356,56 @@ namespace FishFarm
             }
         }
 
-        private void btnДобавить_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var selectedTable = (comboTables.SelectedItem as ComboBoxItem)?.Content.ToString();
-                if (string.IsNullOrEmpty(selectedTable))
-                    return;
+        //private void btnДобавить_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        var selectedTable = (comboTables.SelectedItem as ComboBoxItem)?.Content.ToString();
+        //        if (string.IsNullOrEmpty(selectedTable))
+        //            return;
 
-                Dictionary<string, string> fieldValues = new Dictionary<string, string>();
+        //        Dictionary<string, string> fieldValues = new Dictionary<string, string>();
 
-                foreach (var child in addPanel.Children)
-                {
-                    if (child is TextBox textBox)
-                    {
-                        if (textBox.Foreground != System.Windows.Media.Brushes.Gray)
-                        {
-                            string fieldName = textBox.Name.Replace("txt", string.Empty);
-                            string fieldValue = textBox.Text;
-                            fieldValues.Add(fieldName, fieldValue);
-                        }
-                    }
-                }
+        //        foreach (var child in addPanel.Children)
+        //        {
+        //            if (child is TextBox textBox)
+        //            {
+        //                if (textBox.Foreground != System.Windows.Media.Brushes.Gray)
+        //                {
+        //                    string fieldName = textBox.Name.Replace("txt", string.Empty); // Заменяем "txt" на пустую строку
+        //                    string fieldValue = textBox.Text;
+        //                    fieldValues.Add(fieldName, fieldValue);
+        //                }
+        //            }
+        //        }
 
-                if (selectedTable == "Расписание")
-                {
-                    // Вставляем запись в таблицу "Расписание" без ID_расписание
-                    InsertRecord(selectedTable, fieldValues);
-                }
-                else
-                {
-                    // Вставляем запись в другие таблицы
-                    InsertRecord(selectedTable, fieldValues);
-                }
+        //        // Проверяем, какая таблица выбрана
+        //        if (selectedTable == "Сотрудники")
+        //        {
+        //            // Вставляем запись в таблицу "Сотрудники" без ID_сотрудник
+        //            InsertRecord(selectedTable, fieldValues);
+        //        }
+        //        else if (selectedTable == "Расписание")
+        //        {
+        //            // Вставляем запись в таблицу "Расписание" без ID_расписание
+        //            InsertRecord(selectedTable, fieldValues);
+        //        }
+        //        else
+        //        {
+        //            // Вставляем запись в другие таблицы
+        //            InsertRecord(selectedTable, fieldValues);
+        //        }
 
-                LoadData();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при добавлении записи: {ex.Message}");
-            }
-        }
+        //        LoadData();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Ошибка при добавлении записи: {ex.Message}");
+        //    }
+        //}
+
+
+
 
 
     }

@@ -1,0 +1,24 @@
+﻿<Window x:Class="FishFarm.SheduleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FishFarm"
+        mc:Ignorable="d"
+        Title="Добавить расписание" Height="300" Width="400">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <StackPanel Orientation="Vertical">
+                <Label Content="ID Мероприятия" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBox Name="txtIDМероприятия" Width="200" Margin="0,0,0,10" Padding="5"/>
+                <Label Content="ID Сотрудника" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBox Name="txtIDСотрудника" Width="200" Margin="0,0,0,10" Padding="5"/>
+                <Button Name="btnДобавить" Content="Добавить" Width="200" Height="40" Margin="0,0,0,10" Click="btnДобавить_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
